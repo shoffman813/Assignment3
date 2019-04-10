@@ -54,6 +54,7 @@ void findAverageDifference(vector<vector<int> > trainingSet, vector<double> aver
         return;
 }
 
+/*Calulates the similarity weight between test user and each training user*/
 void calculateWeights(vector<vector<double> > averageDiff, vector<double> &weights) {
 	
 	double sumOfDiffs = 0; //top of fraction in equation
@@ -89,7 +90,7 @@ void testVector(vector<double> v) {
 	ofstream myFile;
 	myFile.open("vector.txt");
 	
-	for(int i = 0; i < 199; i++) {
+	for(int i = 0; i < v.size(); i++) {
                         myFile << v.at(i) << " ";
         }
 
@@ -132,8 +133,6 @@ int main() {
 
 	calculateWeights(averageDiff, weights); //Finds the weight for similarity of test user to every other user
 	
-	testMatrix(averageDiff); //for testing, prints averageDiff matrix to file "matrix.txt"
-	testVector(weights);
 	return 0;
 }
 
