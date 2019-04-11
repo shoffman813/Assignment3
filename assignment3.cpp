@@ -84,6 +84,21 @@ void calculateWeights(vector<vector<double> > averageDiff, vector<double> &weigh
 	return;
 }
 
+/*Finds the most likely rating of a single object for a test user*/
+int findObjectRating(double testUserAverage, vector<vector<double> > averageDiff, vector<double> weights, int desiredMovieRating) {
+
+	double weightAvgDiffSum = 0;
+	double weightSum = 0;
+	int rating = 0;
+
+	for(int i = 0; i < 199; i++) {
+		weightAvgDiffSum += weights.at(i) * averageDiff.at(i).at(desiredMovieRating - 1); //Summing a user's weight times the averageDiff of object
+		weightSum += abs(weights.at(i));
+	}
+	cout << "rating is " << testUserAverage + (weightAvgDiffSum / weightSum) << endl;
+	rating = ceil(testUserAverage + (weightAvgDiffSum / weightSum));
+	return rating;
+}
 
 /*Prints a vector to a file for testing purposes*/
 void testVector(vector<double> v) {
@@ -122,17 +137,29 @@ int main() {
 	vector<double> averageUserRating(200);
 	vector<vector<double> > averageDiff(200, vector<double> (1000, 0));
 	vector<double> weights(199); //holds weights for similarity to test user (user 200)
+	int rating = 0;
+	int desiredMovieRating = 0;
 
 	/*Beginning Calculations for Part 1*/
 
 	readTrainingSet(trainingSet); //Filling matrix with training set data
-
 	findUserAverages(trainingSet, averageUserRating); //Finds the average rating given by each user
-
 	findAverageDifference(trainingSet, averageUserRating, averageDiff); //Finds the difference between a user's average rating and all their ratings
-
 	calculateWeights(averageDiff, weights); //Finds the weight for similarity of test user to every other user
 	
+	cout << "Enter a movie number(1-1000) to find the test user's expected rating: ";
+	cin >> desiredMovieRating;
+
+	while(true) {
+		if(desiredMovieRating == 0) break;
+
+		rating = findObjectRating(averageUserRating.at(199), averageDiff, weights, desiredMovieRating);
+
+		cout << "The expected rating of user 200 for movie " << desiredMovieRating << " is " << rating << endl;
+		cout << "Enter another movie number(1-1000) to test or enter 0 to quit" << endl;
+		cin >> desiredMovieRating;
+	}
+		
 	return 0;
 }
 
