@@ -119,6 +119,80 @@ int findObjectRating(vector<vector<double> > averageDiff, vector<double> weights
 	return rating;
 }
 
+/*Functions for Part 2*/
+
+/*Calulates the similarity weight between test user and each training user*/
+void calculateItemWeights(vector<vector<double> > averageDiff, vector<double> &itemWeights) {
+
+        double sumOfDiffs = 0; //top of fraction in equation
+        double sumOfTrainingUser = 0; //part of bottom half of equation
+        double sumOfTestUser = 0; //part of bottom half of equation
+        double weight = 0;
+	int flag = 0; //For if a movie has no ratings
+
+        for(int i = 0; i < 1000; i++) {
+                for(int j = 0; j < 200; j++) {
+                        if((averageDiff.at(j).at(i) != 0) && (averageDiff.at(j).at(999) != 0)) { //If both movies are rated
+                                sumOfDiffs += averageDiff.at(j).at(i) * averageDiff.at(j).at(999); //multiply differences and add to sum
+                                sumOfTrainingUser += pow(averageDiff.at(j).at(i), 2); //Square differences and add to sum
+                                sumOfTestUser += pow(averageDiff.at(j).at(999), 2); //Square differences and add to sum
+                        }
+			else flag++;
+                }
+		if(flag < 199) {
+                	weight = sumOfDiffs / (sqrt(sumOfTrainingUser * sumOfTestUser)); //Doing final weight calculation
+                	itemWeights.at(i) = weight; //Saving weight to weight vector
+		}
+		else {
+			itemWeights.at(i) = 0;
+			flag = 0;
+		}
+
+                sumOfDiffs = 0; //Clearing values for next user
+                sumOfTrainingUser = 0;
+                sumOfTestUser = 0;
+        }
+        return;
+}
+
+/*Uses case amplification on the similarity weights for each item*/
+void transformWeights(vector<double> itemWeights, vector<double> &itemWeightsT) {
+	
+	for(int i = 0; i < 1000; i++) {
+		if(itemWeights.at(i) == 0) itemWeightsT.at(i) = 0;
+		else if(itemWeights.at(i) < 0) {
+			itemWeightsT.at(i) = (-1) * pow(itemWeights.at(i), 2.5);
+		}
+		else {
+			itemWeightsT.at(i) = pow(itemWeights.at(i), 2.5);
+		}
+	}
+	return;
+}
+
+/*Finds the most likely rating of a single object for a test user*/
+int findUserRating(vector<vector<int> > trainingSet, vector<double> weights, int desiredUserRating) {
+
+        double weightAvgDiffSum = 0;    //numerator
+        double weightSum = 0;   //denominator
+        int rating = 0;
+
+        for(int i = 0; i < 1000; i++) {
+		if((weights.at(i) > 0) && (trainingSet.at(desiredUserRating).at(i) != 0)) {
+                	weightAvgDiffSum += weights.at(i) * (double) trainingSet.at(desiredUserRating).at(i); //Summing item weight times averageDiff of item 
+                	weightSum += abs(weights.at(i));
+		}
+        }
+        double temp_rating = (weightAvgDiffSum / weightSum);
+        if((ceil(temp_rating) - temp_rating) > 0.5)
+                rating = floor(temp_rating);
+        else
+                rating = ceil(temp_rating);
+        return rating;
+}
+
+/*Functions for testing*/
+
 /*Prints a vector to a file for testing purposes*/
 void testVector(vector<double> v) {
 	ofstream myFile;
@@ -195,6 +269,30 @@ int main() {
 		testSet.clear();
 		testAverage = 0;
 	}
+
+	/*Beginning calculations for Part 2: 
+	 *Item Based Collaborative Filtering with Adjusted Cosine Similarity and Case Amplification
+	 */
+
+	vector<double> itemWeights(1000, 0);
+	vector<double> itemWeightsT(1000, 0);
+	int desiredUserRating = 0, rating2 = 0;
+	
+	cout << "Enter a user number(1-200) to find the test movie's expected rating or 0 to quit" << endl; //The test item is item 1000
+        cin >> desiredUserRating;
+
+	while(true) {
+		if(desiredUserRating == 0) break;
+		
+		calculateItemWeights(averageDiff, itemWeights);
+		transformWeights(itemWeights, itemWeightsT); //Case amplification
+		rating2 = findUserRating(trainingSet, itemWeightsT, desiredUserRating-1);
+
+		cout << "The expected rating of user " << desiredUserRating << " for movie 1000 is " << rating2 << endl;
+		cout << "It should be " << trainingSet.at(desiredUserRating-1).at(999) << endl;
+		cout << "Enter another user number(1-200) to test or enter 0 to quit" << endl;
+		cin >> desiredUserRating;
+	}	
 		
 	return 0;
 }
