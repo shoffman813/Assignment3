@@ -132,10 +132,10 @@ void calculateItemWeights(vector<vector<double> > averageDiff, vector<double> &i
 
         for(int i = 0; i < 1000; i++) {
                 for(int j = 0; j < 200; j++) {
-                        if((averageDiff.at(j).at(i) != 0) && (averageDiff.at(j).at(999) != 0)) { //If both movies are rated
-                                sumOfDiffs += averageDiff.at(j).at(i) * averageDiff.at(j).at(999); //multiply differences and add to sum
+                        if((averageDiff.at(j).at(i) != 0) && (averageDiff.at(j).at(0) != 0)) { //If both movies are rated
+                                sumOfDiffs += averageDiff.at(j).at(i) * averageDiff.at(j).at(0); //multiply differences and add to sum
                                 sumOfTrainingUser += pow(averageDiff.at(j).at(i), 2); //Square differences and add to sum
-                                sumOfTestUser += pow(averageDiff.at(j).at(999), 2); //Square differences and add to sum
+                                sumOfTestUser += pow(averageDiff.at(j).at(0), 2); //Square differences and add to sum
                         }
 			else flag++;
                 }
@@ -278,6 +278,7 @@ int main() {
 	vector<double> itemWeightsT(1000, 0);
 	int desiredUserRating = 0, rating2 = 0;
 	
+	cout << endl << "Part 2: " << endl;
 	cout << "Enter a user number(1-200) to find the test movie's expected rating or 0 to quit" << endl; //The test item is item 1000
         cin >> desiredUserRating;
 
@@ -288,8 +289,8 @@ int main() {
 		transformWeights(itemWeights, itemWeightsT); //Case amplification
 		rating2 = findUserRating(trainingSet, itemWeightsT, desiredUserRating-1);
 
-		cout << "The expected rating of user " << desiredUserRating << " for movie 1000 is " << rating2 << endl;
-		cout << "It should be " << trainingSet.at(desiredUserRating-1).at(999) << endl;
+		cout << "The expected rating of user " << desiredUserRating << " for movie 1 is " << rating2 << endl;
+		cout << "It should be " << trainingSet.at(desiredUserRating-1).at(0) << endl;
 		cout << "Enter another user number(1-200) to test or enter 0 to quit" << endl;
 		cin >> desiredUserRating;
 	}	
